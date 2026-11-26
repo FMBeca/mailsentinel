@@ -22,6 +22,7 @@ from mailsentinel.parser import NotAnEmailError, parse_bytes
 _COLORS = {"low": "\033[36m", "medium": "\033[33m", "high": "\033[31m", "critical": "\033[1;41m",
            "clean": "\033[32m", "suspicious": "\033[33m", "phishing": "\033[1;41m"}
 _RESET = "\033[0m"
+MAX_URLS_SHOWN = 15
 _LABELS = {Verdict.CLEAN: "CLEAN", Verdict.SUSPICIOUS: "SUSPICIOUS", Verdict.PHISHING: "LIKELY PHISHING"}
 
 
@@ -65,6 +66,13 @@ def _print_table(result: Analysis, source: str, safe: bool, color: bool) -> None
             print(f"    sender domains: {', '.join(iocs['sender_domains'])}")
         if iocs["received_ips"]:
             print(f"    received IPs  : {', '.join(iocs['received_ips'])}  (oldest hop first)")
+        if iocs["url_domains"]:
+            print(f"    URL domains   : {', '.join(iocs['url_domains'])}")
+        for u in iocs["urls"][:MAX_URLS_SHOWN]:
+            shown_as = f'  (shown as "{u["text"]}")' if u["text"] and u["text"] != u["url"] else ""
+            print(f"    URL           : {u['url']}{shown_as}")
+        if len(iocs["urls"]) > MAX_URLS_SHOWN:
+            print(f"    ... {len(iocs['urls']) - MAX_URLS_SHOWN} more URLs (use --json for all)")
 
 
 def build_parser() -> argparse.ArgumentParser:
