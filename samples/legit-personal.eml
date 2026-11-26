@@ -1,0 +1,18 @@
+Received: from laptop.example.org (laptop.example.org [192.0.2.15])
+        by mail.example.org (Postfix) with ESMTPSA id 77AA10;
+        Thu, 26 Nov 2026 18:41:20 +0000
+From: "john.doe@example.org" <john.doe@example.org>
+To: "Maria Silva" <maria.silva@example.org>
+Subject: =?utf-8?q?Jantar_de_s=C3=A1bado?=
+Date: Thu, 26 Nov 2026 18:41:19 +0000
+Message-ID: <5f6e7d8c@laptop.example.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+Olá Maria,
+
+Confirmas o jantar de sábado às 20h? Levo a sobremesa.
+
+Abraço,
+João

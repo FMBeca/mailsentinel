@@ -1,0 +1,38 @@
+Return-Path: <bounce-7731@mailer.example.org>
+Authentication-Results: mx.example.com;
+       spf=softfail (example.com: domain of transitioning bounce-7731@mailer.example.org does not designate 203.0.113.45 as permitted sender) smtp.mailfrom=bounce-7731@mailer.example.org;
+       dkim=none;
+       dmarc=fail (p=QUARANTINE sp=QUARANTINE dis=QUARANTINE) header.from=account-verify.example.net
+Received: from mailer.example.org (mailer.example.org [203.0.113.45])
+        by mx.example.com with ESMTP id 4f1a9c2b
+        for <victim@example.com>; Tue, 24 Nov 2026 09:12:44 +0000
+Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=account-verify.example.net; dkim=pass header.d=account-verify.example.net; dmarc=pass header.from=account-verify.example.net
+Received: from [192.0.2.77] (unknown [192.0.2.77])
+        by mailer.example.org with ESMTPA id 88d2e1
+        for <victim@example.com>; Tue, 24 Nov 2026 09:12:41 +0000
+From: "PayPal" <security@account-verify.example.net>
+Reply-To: helpdesk-resolution@example.org
+To: victim@example.com
+Subject: Your account has been limited - action required
+Date: Tue, 24 Nov 2026 09:12:40 +0000
+Message-ID: <20261124091240.5521@account-verify.example.net>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1_sample"
+
+--b1_sample
+Content-Type: text/plain; charset="utf-8"
+
+We noticed unusual activity on your account and have temporarily limited it.
+Confirm your details within 24 hours to avoid permanent suspension:
+https://accounts.example.com/signin
+
+--b1_sample
+Content-Type: text/html; charset="utf-8"
+
+<html><body>
+<p>We noticed unusual activity on your account and have temporarily limited it.</p>
+<p>Confirm your details within 24 hours to avoid permanent suspension:</p>
+<p><a href="http://203.0.113.45/verify/login.php?id=5521">https://accounts.example.com/signin</a></p>
+</body></html>
+
+--b1_sample--
