@@ -12,19 +12,13 @@ from __future__ import annotations
 import re
 
 from mailsentinel.brands import BRANDS, Brand, mentioned
-from mailsentinel.domains import org_domain, same_org
+from mailsentinel.domains import find_domains, org_domain, same_org
 from mailsentinel.models import Finding, ParsedEmail, Severity
 
 PHISHING = "T1566"
 IMPERSONATION = "T1656"
 
 _EMAIL_IN_NAME = re.compile(r"[\w.+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)")
-# Only common TLDs, so that "Support.Team" or "J.Smith" are not mistaken for domains.
-_DOMAIN_IN_NAME = re.compile(
-    r"(?<![\w@.-])((?:[A-Za-z0-9-]+\.)+(?:com|net|org|info|biz|io|co|me|app|online|site|xyz|top|"
-    r"pt|br|es|uk|de|fr|it|nl|eu|us|gov|edu|example|test|invalid))(?![\w-])",
-    re.IGNORECASE,
-)
 
 
 def _reply_to(email: ParsedEmail, from_domain: str) -> list[Finding]:
@@ -63,7 +57,7 @@ def _display_name(email: ParsedEmail, from_domain: str, brands: tuple[Brand, ...
         return []
 
     claimed = [m.group(1) for m in _EMAIL_IN_NAME.finditer(name)]
-    claimed += [m.group(1) for m in _DOMAIN_IN_NAME.finditer(_EMAIL_IN_NAME.sub(" ", name))]
+    claimed += find_domains(_EMAIL_IN_NAME.sub(" ", name))
     foreign = sorted({org_domain(d) for d in claimed if not same_org(d, from_domain)})
     if foreign:
         return [Finding(
