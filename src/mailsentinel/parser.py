@@ -10,8 +10,8 @@ from email.message import EmailMessage
 from email.parser import BytesParser
 from email.utils import getaddresses
 
-from mailsentinel import auth, urls
-from mailsentinel.models import Address, Hop, ParsedEmail
+from mailsentinel import auth, files, urls
+from mailsentinel.models import Address, Attachment, Hop, ParsedEmail
 
 # Headers that almost every real message has. A file with none of them is not an email
 # (or not one we understand): saying "clean" about it would be a silent false negative.
@@ -105,18 +105,39 @@ def _text(part: EmailMessage) -> str:
         return payload.decode("utf-8", errors="replace")
 
 
-def _bodies(msg: EmailMessage) -> tuple[str, str]:
+def _filename(part: EmailMessage) -> str:
+    try:
+        return part.get_filename() or ""
+    except (LookupError, UnicodeError, ValueError):
+        return ""
+
+
+def _attachment(part: EmailMessage, filename: str) -> Attachment:
+    try:
+        data = part.get_payload(decode=True) or b""
+    except (ValueError, TypeError):
+        data = b""
+    return files.inspect(filename, part.get_content_type(), data, inline=part.get_content_disposition() == "inline")
+
+
+def _parts(msg: EmailMessage) -> tuple[str, str, list[Attachment]]:
+    """Text bodies, HTML bodies and attachments (any part with a filename or marked as attachment)."""
     text: list[str] = []
     html: list[str] = []
+    attachments: list[Attachment] = []
     for part in msg.walk():
-        if part.is_multipart() or part.get_content_disposition() == "attachment":
+        if part.is_multipart():
+            continue
+        filename = _filename(part)
+        if filename or part.get_content_disposition() == "attachment":
+            attachments.append(_attachment(part, filename))
             continue
         ctype = part.get_content_type()
         if ctype == "text/plain":
             text.append(_text(part))
         elif ctype == "text/html":
             html.append(_text(part))
-    return "\n".join(text), "\n".join(html)
+    return "\n".join(text), "\n".join(html), attachments
 
 
 def parse_bytes(data: bytes) -> ParsedEmail:
@@ -132,7 +153,7 @@ def parse_bytes(data: bytes) -> ParsedEmail:
     senders = _addresses(msg, "From")
     raw_return_path = _raw_all(msg, "Return-Path")
     return_path = raw_return_path[0].strip().strip("<>").strip() if raw_return_path else ""
-    text_body, html_body = _bodies(msg)
+    text_body, html_body, attachments = _parts(msg)
     links, forms = urls.extract(text_body, html_body)
 
     defects = [type(d).__name__ for d in msg.defects]
@@ -155,6 +176,7 @@ def parse_bytes(data: bytes) -> ParsedEmail:
         html_body=html_body,
         links=links,
         forms=forms,
+        attachments=attachments,
         defects=defects,
     )
 

@@ -1,0 +1,47 @@
+Return-Path: <ap@supplier-invoices.example.net>
+Authentication-Results: mx.example.com; spf=pass
+ smtp.mailfrom=supplier-invoices.example.net; dkim=none; dmarc=none
+ header.from=supplier-invoices.example.net
+Received: from smtp.supplier-invoices.example.net
+ (smtp.supplier-invoices.example.net [203.0.113.120]) by mx.example.com with
+ ESMTP id 5d4c3b2a; Tue, 24 Nov 2026 10:21:07 +0000
+From: "Accounts Payable" <ap@supplier-invoices.example.net>
+To: finance@example.com
+Subject: Overdue invoice 2026-11 - payment details attached
+Date: Tue, 24 Nov 2026 10:21:05 +0000
+Message-ID: <inv-2026-11-0042@supplier-invoices.example.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="att_phish_0"
+
+--att_phish_0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hello,
+
+Please find attached the overdue invoice and the remittance advice.
+Payment is due today to avoid late fees.
+
+Accounts Payable
+
+--att_phish_0
+Content-Type: application/javascript
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="Invoice_2026-11.pdf.js"
+MIME-Version: 1.0
+
+Ly8gSGFybWxlc3MgcGxhY2Vob2xkZXIgd3JpdHRlbiBmb3IgTWFpbFNlbnRpbmVsIHRlc3RzLiBJ
+dCBkb2VzIG5vdGhpbmcuCg==
+
+--att_phish_0
+Content-Type: application/zip
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="Remittance.zip"
+MIME-Version: 1.0
+
+UEsDBBQAAAAAAABIeF0WS50rIQAAACEAAAAZAAAAUmVtaXR0YW5jZV9BZHZpY2UucGRmLmxua3Bs
+YWNlaG9sZGVyLCBub3QgYSByZWFsIHNob3J0Y3V0ClBLAQIUABQAAAAAAABIeF0WS50rIQAAACEA
+AAAZAAAAAAAAAAAAAACAAQAAAABSZW1pdHRhbmNlX0FkdmljZS5wZGYubG5rUEsFBgAAAAABAAEA
+RwAAAFgAAAAAAA==
+
+--att_phish_0--

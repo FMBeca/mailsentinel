@@ -1,0 +1,73 @@
+Return-Path: <billing@example.com>
+Authentication-Results: mx.example.org; spf=pass smtp.mailfrom=example.com;
+ dkim=pass header.d=example.com header.s=b1; dmarc=pass (p=REJECT)
+ header.from=example.com
+Received: from mail.example.com (mail.example.com [198.51.100.10]) by
+ mx.example.org with ESMTPS id 1a2b3c; Wed, 25 Nov 2026 09:00:03 +0000
+From: "Example Billing" <billing@example.com>
+To: customer@example.org
+Subject: Your November invoice and updated contract
+Date: Wed, 25 Nov 2026 09:00:00 +0000
+Message-ID: <invoice-2026-11-7781@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="att_legit_0"
+
+--att_legit_0
+Content-Type: multipart/alternative; boundary="att_legit_1"
+
+--att_legit_1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hello,
+
+Your November invoice and the updated contract are attached.
+
+Example Billing
+
+--att_legit_1
+MIME-Version: 1.0
+Content-Type: multipart/related; boundary="att_legit_3"
+
+--att_legit_3
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><img src=3D"cid:logo"><p>Your November invoice and the updated co=
+ntract are attached.</p></body></html>
+
+--att_legit_3
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-Disposition: inline; filename="logo.png"
+Content-ID: <logo>
+MIME-Version: 1.0
+
+iVBORw0KGgoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+
+--att_legit_3--
+
+--att_legit_1--
+
+--att_legit_0
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="invoice-2026-11.pdf"
+MIME-Version: 1.0
+
+JVBERi0xLjQKMSAwIG9iaiA8PCAvVHlwZSAvQ2F0YWxvZyA+PiBlbmRvYmoKdHJhaWxlciA8PCAv
+Um9vdCAxIDAgUiA+PgolJUVPRgo=
+
+--att_legit_0
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="contract.docx"
+MIME-Version: 1.0
+
+UEsDBBQAAAAAAABIeF3HHBc8CAAAAAgAAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbDxUeXBlcy8+
+UEsDBBQAAAAAAABIeF3dWoYNDQAAAA0AAAARAAAAd29yZC9kb2N1bWVudC54bWw8dzpkb2N1bWVu
+dC8+UEsBAhQAFAAAAAAAAEh4XcccFzwIAAAACAAAABMAAAAAAAAAAAAAAIABAAAAAFtDb250ZW50
+X1R5cGVzXS54bWxQSwECFAAUAAAAAAAASHhd3VqGDQ0AAAANAAAAEQAAAAAAAAAAAAAAgAE5AAAA
+d29yZC9kb2N1bWVudC54bWxQSwUGAAAAAAIAAgCAAAAAdQAAAAAA
+
+--att_legit_0--

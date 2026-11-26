@@ -81,6 +81,21 @@ class Form:
     has_password: bool
 
 
+@dataclass(frozen=True)
+class Attachment:
+    """A file attached to the message (or embedded inline, like a logo)."""
+
+    filename: str                # as declared by the sender; may hide tricks (see files.display_name)
+    content_type: str
+    size: int
+    sha256: str
+    inline: bool = False         # Content-Disposition: inline (images shown in the body)
+    magic: str = ""              # real type from the first bytes: "pe", "elf", "zip", "ole", "pdf", "iso"...
+    archive_names: tuple[str, ...] = ()   # file names inside a ZIP (never extracted)
+    encrypted: bool = False      # password-protected ZIP
+    has_macros: bool = False     # Office document with a VBA project
+
+
 @dataclass
 class ParsedEmail:
     """The parts of a message the detectors look at."""
@@ -97,6 +112,7 @@ class ParsedEmail:
     html_body: str = ""
     links: list[Link] = field(default_factory=list)
     forms: list[Form] = field(default_factory=list)
+    attachments: list[Attachment] = field(default_factory=list)
     defects: list[str] = field(default_factory=list)  # parsing problems worth reporting
 
     @property
