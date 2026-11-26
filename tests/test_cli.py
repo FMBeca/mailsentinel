@@ -15,6 +15,7 @@ from mailsentinel.cli import main
     ("phish-credential-form.eml", "phishing", 1),
     ("phish-attachment.eml", "phishing", 1),
     ("legit-invoice.eml", "clean", 0),
+    ("phish-lookalike.eml", "phishing", 1),
 ])
 def test_samples_verdict_and_exit_code(samples, capsys, name, verdict, code):
     assert main([str(samples / name), "--json"]) == code
@@ -70,6 +71,14 @@ def test_attachment_table_output(samples, capsys):
     assert "attachment    : Remittance.zip" in out
     assert "contains  : Remittance_Advice.pdf.lnk" in out
     assert "sha256    : " in out
+
+
+def test_lookalike_sample(samples, capsys):
+    # Supplier fraud from a domain one character away from the recipient's, with valid SPF/DKIM/DMARC.
+    main([str(samples / "phish-lookalike.eml"), "--json"])
+    out = json.loads(capsys.readouterr().out)
+    assert out["authentication"]["dmarc"] == "pass"
+    assert {f["rule_id"] for f in out["findings"]} == {"MAIL-LOOK-001", "MAIL-LOOK-002", "MAIL-LOOK-003"}
 
 
 def test_findings_sorted_by_score(samples, capsys):

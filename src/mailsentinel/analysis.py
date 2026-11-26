@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from mailsentinel import files
 from mailsentinel.defang import defang, defang_ip
 from mailsentinel.detectors import attachments as attachment_rules
-from mailsentinel.detectors import authentication, links, sender
+from mailsentinel.detectors import authentication, links, lookalike, sender
 from mailsentinel.models import Finding, ParsedEmail, Verdict
 
 # The score is the sum of the findings' points, capped at 100. These thresholds mean:
@@ -126,5 +126,11 @@ class Analysis:
 
 
 def analyze(email: ParsedEmail) -> Analysis:
-    findings = authentication.detect(email) + sender.detect(email) + links.detect(email) + attachment_rules.detect(email)
+    findings = (
+        authentication.detect(email)
+        + sender.detect(email)
+        + lookalike.detect(email)
+        + links.detect(email)
+        + attachment_rules.detect(email)
+    )
     return Analysis(email=email, findings=findings)

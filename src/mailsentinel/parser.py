@@ -166,6 +166,7 @@ def parse_bytes(data: bytes) -> ParsedEmail:
         message_id=str(msg.get("Message-ID", "")).strip(),
         from_=senders[0] if senders else None,
         reply_to=_addresses(msg, "Reply-To"),
+        recipients=_addresses(msg, "To") + _addresses(msg, "Cc"),
         return_path=return_path,
         auth=auth.from_headers(
             [str(v) for v in msg.get_all("Authentication-Results", [])],
