@@ -1,0 +1,42 @@
+Return-Path: <accounts@n0rthwind.example>
+Authentication-Results: mx.northwind.example;
+       spf=pass smtp.mailfrom=accounts@n0rthwind.example;
+       dkim=pass header.d=n0rthwind.example header.s=m1;
+       dmarc=pass (p=NONE) header.from=n0rthwind.example
+Received: from mail.n0rthwind.example (mail.n0rthwind.example [198.51.100.66])
+        by mx.northwind.example with ESMTPS id 3e4f5a6b
+        for <finance@northwind.example>; Thu, 26 Nov 2026 11:05:31 +0000
+From: "Northwind Accounts" <accounts@n0rthwind.example>
+To: finance@northwind.example
+Subject: Updated bank details for this month's payment
+Date: Thu, 26 Nov 2026 11:05:29 +0000
+Message-ID: <7a6b5c4d@mail.n0rthwind.example>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="look_boundary"
+
+--look_boundary
+Content-Type: text/plain; charset="utf-8"
+
+Hello,
+
+Our bank account has changed. Please use the new details in the attached
+portal for this month's payment, and confirm once it is done.
+
+New details: https://xn--pypal-4ve.example/invoice/2026-11
+Sign in with your company account: https://microsoft-365-login.example/
+
+Northwind Accounts
+
+--look_boundary
+Content-Type: text/html; charset="utf-8"
+
+<html><body>
+<p>Hello,</p>
+<p>Our bank account has changed. Please use the new details in the portal for this
+month's payment, and confirm once it is done.</p>
+<p><a href="https://xn--pypal-4ve.example/invoice/2026-11">View payment details</a></p>
+<p><a href="https://microsoft-365-login.example/">Sign in with your company account</a></p>
+<p>Northwind Accounts</p>
+</body></html>
+
+--look_boundary--

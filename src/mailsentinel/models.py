@@ -105,6 +105,7 @@ class ParsedEmail:
     message_id: str = ""
     from_: Address | None = None
     reply_to: list[Address] = field(default_factory=list)
+    recipients: list[Address] = field(default_factory=list)   # To and Cc
     return_path: str = ""        # envelope sender, without angle brackets
     auth: AuthResults = field(default_factory=AuthResults)
     hops: list[Hop] = field(default_factory=list)   # topmost (latest) first, as in the message
