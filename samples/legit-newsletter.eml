@@ -1,0 +1,39 @@
+Return-Path: <bounces+42-7f3a@esp.example.net>
+Authentication-Results: mx.example.org;
+       dkim=pass header.i=@example.com header.s=s1 header.b=Abc123;
+       dkim=pass header.i=@esp.example.net header.s=esp header.b=Def456;
+       spf=pass (example.org: domain of bounces+42-7f3a@esp.example.net designates 198.51.100.80 as permitted sender) smtp.mailfrom="bounces+42-7f3a@esp.example.net";
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=example.com
+Received: from o1.esp.example.net (o1.esp.example.net. [198.51.100.80])
+        by mx.example.org with ESMTPS id x12si345
+        for <reader@example.org>; Mon, 23 Nov 2026 07:30:02 -0800 (PST)
+From: "Example Weekly" <newsletter@news.example.com>
+Reply-To: "Example Support" <support@example.com>
+To: reader@example.org
+Subject: =?utf-8?q?This_week_at_Example=3A_product_updates_and_events?=
+Date: Mon, 23 Nov 2026 15:30:00 +0000
+Message-ID: <weekly-2026-48@news.example.com>
+List-Unsubscribe: <https://news.example.com/unsubscribe?u=42>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="nl_boundary"
+
+--nl_boundary
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hello,
+
+Here is what happened at Example this week. Read the full post:
+https://www.example.com/blog/week-48
+
+--nl_boundary
+Content-Type: text/html; charset="utf-8"
+
+<html><body>
+<p>Hello,</p>
+<p>Here is what happened at Example this week.
+<a href="https://www.example.com/blog/week-48">Read the full post</a></p>
+<p><a href="https://news.example.com/unsubscribe?u=42">Unsubscribe</a></p>
+</body></html>
+
+--nl_boundary--

@@ -1,0 +1,29 @@
+Received: from AM0PR01MB0000.eurprd01.prod.example.com (2001:db8:10::1) by
+ AM0PR01MB0001.eurprd01.prod.example.com with HTTPS; Wed, 25 Nov 2026 14:03:11 +0000
+Authentication-Results: spf=pass (sender IP is 198.51.100.23)
+ smtp.mailfrom=example.net; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=example.net;compauth=fail
+ reason=001
+Received-SPF: Pass (protection.example.com: domain of example.net designates
+ 198.51.100.23 as permitted sender) receiver=protection.example.com;
+ client-ip=198.51.100.23; helo=smtp.example.net; pr=C
+Received: from smtp.example.net (198.51.100.23) by
+ AM0PR01MB0000.eurprd01.prod.example.com (2001:db8:10::2) with Microsoft SMTP
+ Server id 15.20.0000.000; Wed, 25 Nov 2026 14:03:10 +0000
+Received: from workstation (unknown [192.0.2.140])
+        by smtp.example.net (Postfix) with ESMTPSA id 1A2B3C;
+        Wed, 25 Nov 2026 14:03:09 +0000
+Return-Path: <helpdesk@example.net>
+From: "it-support@example.com" <helpdesk@example.net>
+To: employee@example.com
+Subject: Mailbox storage full - re-validate your password
+Date: Wed, 25 Nov 2026 14:03:08 +0000
+Message-ID: <a1b2c3d4@smtp.example.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Your mailbox has reached its storage limit and incoming messages are being held.
+Reply to this email with your username and current password so we can increase
+your quota today.
+
+IT Service Desk
