@@ -13,6 +13,8 @@ from mailsentinel.cli import main
     ("phish-display-name.eml", "suspicious", 1),
     ("phish-brand-spoof.eml", "phishing", 1),
     ("phish-credential-form.eml", "phishing", 1),
+    ("phish-attachment.eml", "phishing", 1),
+    ("legit-invoice.eml", "clean", 0),
 ])
 def test_samples_verdict_and_exit_code(samples, capsys, name, verdict, code):
     assert main([str(samples / name), "--json"]) == code
@@ -48,6 +50,26 @@ def test_url_iocs_keep_link_text(samples, capsys):
     urls = {u["url"]: u for u in json.loads(capsys.readouterr().out)["iocs"]["urls"]}
     assert urls["http://203.0.113.45/verify/login.php?id=5521"]["text"] == "https://accounts.example.com/signin"
     assert urls["https://accounts.example.com/signin"]["source"] == "text"
+
+
+def test_attachment_iocs(samples, capsys):
+    main([str(samples / "phish-attachment.eml"), "--json"])
+    out = json.loads(capsys.readouterr().out)
+    assert {f["rule_id"] for f in out["findings"]} == {"MAIL-ATT-001", "MAIL-ATT-005", "MAIL-ATT-007"}
+    atts = {a["filename"]: a for a in out["iocs"]["attachments"]}
+    assert atts["Remittance.zip"]["archive_contents"] == ["Remittance_Advice.pdf.lnk"]
+    assert len(atts["Invoice_2026-11.pdf.js"]["sha256"]) == 64
+    # File names are not defanged ("invoice.pdf" must stay searchable as is).
+    reasons = {f["rule_id"]: f["details"] for f in out["findings"]}
+    assert reasons["MAIL-ATT-001"]["files"] == "Invoice_2026-11.pdf.js"
+
+
+def test_attachment_table_output(samples, capsys):
+    main([str(samples / "phish-attachment.eml"), "--no-color"])
+    out = capsys.readouterr().out
+    assert "attachment    : Remittance.zip" in out
+    assert "contains  : Remittance_Advice.pdf.lnk" in out
+    assert "sha256    : " in out
 
 
 def test_findings_sorted_by_score(samples, capsys):

@@ -3,7 +3,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from mailsentinel import files
 from mailsentinel.defang import defang, defang_ip
+from mailsentinel.detectors import attachments as attachment_rules
 from mailsentinel.detectors import authentication, links, sender
 from mailsentinel.models import Finding, ParsedEmail, Verdict
 
@@ -13,6 +15,9 @@ from mailsentinel.models import Finding, ParsedEmail, Verdict
 SUSPICIOUS_AT = 20
 PHISHING_AT = 50
 MAX_SCORE = 100
+
+# Finding details that are file names or hashes: defanging would turn "invoice.pdf" into "invoice[.]pdf".
+PLAIN_DETAILS = frozenset({"files", "archive_contents", "reason", "real_type"})
 
 
 def verdict_for(score: int) -> Verdict:
@@ -64,6 +69,24 @@ class Analysis:
     def url_domains(self) -> list[str]:
         return list(dict.fromkeys(u["host"] for u in self.urls() if u["host"]))
 
+    def attachments(self) -> list[dict]:
+        return [
+            {
+                "filename": files.display_name(a.filename),
+                "content_type": a.content_type,
+                "size": a.size,
+                "sha256": a.sha256,
+                "inline": a.inline,
+                "real_type": a.magic,
+                "type_mismatch": files.type_mismatch(a.filename, a.magic),
+                "encrypted": a.encrypted,
+                "macros": a.has_macros,
+                "archive_contents": [files.display_name(n) for n in a.archive_names]
+                if files.is_archive(a.filename, a.magic) else [],
+            }
+            for a in self.email.attachments
+        ]
+
     def to_dict(self, safe: bool = True) -> dict:
         """JSON-ready dict. With safe=True every IOC is defanged."""
         e = self.email
@@ -88,7 +111,7 @@ class Analysis:
                 "source": e.auth.source or "absent",
             },
             "findings": [
-                {**f.to_dict(), "details": {k: fang(v) for k, v in f.details.items()}}
+                {**f.to_dict(), "details": {k: v if k in PLAIN_DETAILS else fang(v) for k, v in f.details.items()}}
                 for f in sorted(self.findings, key=lambda f: f.score, reverse=True)
             ],
             "iocs": {
@@ -96,11 +119,12 @@ class Analysis:
                 "sender_domains": [fang(d) for d in self.sender_domains()],
                 "url_domains": [fang(d) for d in self.url_domains()],
                 "urls": [{k: fang(v) for k, v in u.items()} for u in self.urls()],
+                "attachments": self.attachments(),
             },
             "defects": list(e.defects),
         }
 
 
 def analyze(email: ParsedEmail) -> Analysis:
-    findings = authentication.detect(email) + sender.detect(email) + links.detect(email)
+    findings = authentication.detect(email) + sender.detect(email) + links.detect(email) + attachment_rules.detect(email)
     return Analysis(email=email, findings=findings)

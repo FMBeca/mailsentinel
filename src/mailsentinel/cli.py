@@ -73,6 +73,14 @@ def _print_table(result: Analysis, source: str, safe: bool, color: bool) -> None
             print(f"    URL           : {u['url']}{shown_as}")
         if len(iocs["urls"]) > MAX_URLS_SHOWN:
             print(f"    ... {len(iocs['urls']) - MAX_URLS_SHOWN} more URLs (use --json for all)")
+        for a in iocs["attachments"]:
+            flags = [x for x in (a["type_mismatch"] and f"real type: {a['real_type']}", a["encrypted"] and "encrypted",
+                                 a["macros"] and "macros", a["inline"] and "inline") if x]
+            extra = f"; {', '.join(flags)}" if flags else ""
+            print(f"    attachment    : {a['filename'] or '(no name)'}  ({a['content_type']}, {a['size']} bytes{extra})")
+            print(f"        sha256    : {a['sha256']}")
+            for name in a["archive_contents"][:MAX_URLS_SHOWN]:
+                print(f"        contains  : {name}")
 
 
 def build_parser() -> argparse.ArgumentParser:
