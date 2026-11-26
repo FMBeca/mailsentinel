@@ -21,11 +21,17 @@ MailSentinel reads them and points out what does not add up, for example:
 - the receiving server checked the sender's domain (SPF, DKIM, DMARC) and it failed;
 - the name shown says "PayPal", or shows a company address, but the real address is somewhere else;
 - replies would go to a different organisation than the one in the From line;
-- the message was handed over by servers that do not belong to the sender's domain.
+- a link shows one address but leads to another, or points to a bare IP address;
+- the email contains a form that asks for a password.
 
 Each finding adds points to a risk score. The output is a verdict (clean, suspicious, likely
 phishing), the evidence for it, and the indicators (domains, IPs) in a defanged form that can be
 pasted into a ticket or chat without turning into clickable links.
+
+Passing SPF, DKIM and DMARC only proves that the message really comes from the domain in the From
+line, not that the domain is trustworthy: attackers register their own domains and authenticate
+them. The sample `phish-credential-form.eml` passes all three checks and is still flagged, by its
+content.
 
 ## Detections
 
@@ -38,13 +44,22 @@ pasted into a ticket or chat without turning into clickable links.
 | Return-Path from another organisation, without DMARC pass | MAIL-SND-002 | Low | [T1566](https://attack.mitre.org/techniques/T1566/) | Done |
 | Display name shows a different address or domain | MAIL-SND-003 | High | [T1656](https://attack.mitre.org/techniques/T1656/) | Done |
 | Display name claims a brand the sender does not own | MAIL-SND-004 | Medium | [T1656](https://attack.mitre.org/techniques/T1656/) | Done |
+| Link text shows a different address than the real destination | MAIL-URL-001 | High (Low if DMARC passed) | [T1566.002](https://attack.mitre.org/techniques/T1566/002/) | Done |
+| Link to a bare IP address (including IPv4 written as one number) | MAIL-URL-002 | High | [T1566.002](https://attack.mitre.org/techniques/T1566/002/) | Done |
+| Real host hidden behind an "@" (`https://bank.example@203.0.113.80/`) | MAIL-URL-003 | High | [T1566.002](https://attack.mitre.org/techniques/T1566/002/) | Done |
+| URL shortener hides the destination | MAIL-URL-004 | Low | [T1566.002](https://attack.mitre.org/techniques/T1566/002/) | Done |
+| HTML form inside the email (High with a password field) | MAIL-URL-005 | High / Medium | [T1598](https://attack.mitre.org/techniques/T1598/) | Done |
 | Lookalike sender domains (punycode, mixed scripts, edit distance) | | | [T1656](https://attack.mitre.org/techniques/T1656/) | Planned |
-| Links whose visible text differs from the real destination | | | [T1566.002](https://attack.mitre.org/techniques/T1566/002/) | Planned |
-| URL and domain extraction from text and HTML | | | [T1566.002](https://attack.mitre.org/techniques/T1566/002/) | Planned |
 | Attachments: SHA-256, dangerous extensions, double extensions, macros | | | [T1566.001](https://attack.mitre.org/techniques/T1566/001/) | Planned |
 | Requests for credentials or other information | | | [T1598](https://attack.mitre.org/techniques/T1598/) | Planned |
 
-T1566 is Phishing; T1656 is Impersonation (pretending to be a trusted person or organisation).
+T1566 is Phishing (T1566.002: with a link, T1566.001: with an attachment); T1598 is Phishing for
+Information (collecting credentials or data rather than delivering malware); T1656 is
+Impersonation (pretending to be a trusted person or organisation).
+
+URLs are collected from the plain-text body, from HTML link targets (keeping the text each link is
+shown with), from URLs written as visible HTML text, and from form actions. Each rule produces at
+most one finding per message, so twenty identical links do not count twenty times.
 
 ## Installation
 
@@ -73,7 +88,7 @@ Reply-To   : <helpdesk-resolution[@]example[.]org>
 Return-Path: bounce-7731[@]mailer[.]example[.]org
 Auth       : SPF softfail | DKIM none | DMARC fail
 
-Verdict    : LIKELY PHISHING  (score 90/100)
+Verdict    : LIKELY PHISHING  (score 100/100)
 
 [HIGH] DMARC failed: the From domain could not be authenticated (possible spoofing)  (MAIL-AUTH-003)
     +30 points  MITRE: T1566
@@ -87,6 +102,9 @@ Verdict    : LIKELY PHISHING  (score 90/100)
 IOCs (defanged)
     sender domains: account-verify[.]example[.]net, example[.]org, mailer[.]example[.]org
     received IPs  : 192[.]0[.]2[.]77, 203[.]0[.]113[.]45  (oldest hop first)
+    URL domains   : accounts[.]example[.]com, 203[.]0[.]113[.]45
+    URL           : hxxps[://]accounts[.]example[.]com/signin
+    URL           : hxxp[://]203[.]0[.]113[.]45/verify/login.php?id=5521  (shown as "hxxps[://]accounts[.]example[.]com/signin")
 ```
 
 To get an `.eml` file: in Outlook on the web or Thunderbird, use "Save as" / "Download"; in Gmail,
@@ -129,7 +147,7 @@ v0.1:
 - [x] Parser for headers and text/HTML bodies; Received chain
 - [x] SPF / DKIM / DMARC results and sender consistency rules
 - [x] Scored verdict, table and JSON output, exit codes, defanged indicators
-- [ ] URLs and domains from text and HTML, including links whose text differs from the destination
+- [x] URLs and domains from text and HTML, including links whose text differs from the destination
 - [ ] Attachments with SHA-256 and dangerous or double extensions
 - [ ] Lookalike sender domains
 
