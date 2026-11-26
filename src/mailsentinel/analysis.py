@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from mailsentinel.defang import defang, defang_ip
-from mailsentinel.detectors import authentication, sender
+from mailsentinel.detectors import authentication, links, sender
 from mailsentinel.models import Finding, ParsedEmail, Verdict
 
 # The score is the sum of the findings' points, capped at 100. These thresholds mean:
@@ -52,6 +52,18 @@ class Analysis:
             domains.append(e.return_path_domain)
         return list(dict.fromkeys(d for d in domains if d))
 
+    def urls(self) -> list[dict[str, str]]:
+        """Each distinct URL once, with where it was found and the link text it was shown with."""
+        seen: dict[str, dict[str, str]] = {}
+        for link in self.email.links:
+            entry = seen.setdefault(link.url, {"url": link.url, "host": link.host, "source": link.source, "text": ""})
+            if link.text and not entry["text"]:
+                entry["text"] = link.text
+        return list(seen.values())
+
+    def url_domains(self) -> list[str]:
+        return list(dict.fromkeys(u["host"] for u in self.urls() if u["host"]))
+
     def to_dict(self, safe: bool = True) -> dict:
         """JSON-ready dict. With safe=True every IOC is defanged."""
         e = self.email
@@ -82,11 +94,13 @@ class Analysis:
             "iocs": {
                 "received_ips": [ip(x) for x in self.received_ips()],
                 "sender_domains": [fang(d) for d in self.sender_domains()],
+                "url_domains": [fang(d) for d in self.url_domains()],
+                "urls": [{k: fang(v) for k, v in u.items()} for u in self.urls()],
             },
             "defects": list(e.defects),
         }
 
 
 def analyze(email: ParsedEmail) -> Analysis:
-    findings = authentication.detect(email) + sender.detect(email)
+    findings = authentication.detect(email) + sender.detect(email) + links.detect(email)
     return Analysis(email=email, findings=findings)

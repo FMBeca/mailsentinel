@@ -62,6 +62,25 @@ class Hop:
     raw: str = ""
 
 
+@dataclass(frozen=True)
+class Link:
+    """A URL found in the message body."""
+
+    url: str
+    host: str                    # lowercased hostname, "" if it cannot be parsed
+    source: str                  # "text", "html-text", "html-link", "html-form"
+    text: str = ""               # visible text of an HTML link
+
+
+@dataclass(frozen=True)
+class Form:
+    """An HTML form inside the message: data typed into it goes to `action`."""
+
+    action: str
+    host: str
+    has_password: bool
+
+
 @dataclass
 class ParsedEmail:
     """The parts of a message the detectors look at."""
@@ -76,6 +95,8 @@ class ParsedEmail:
     hops: list[Hop] = field(default_factory=list)   # topmost (latest) first, as in the message
     text_body: str = ""
     html_body: str = ""
+    links: list[Link] = field(default_factory=list)
+    forms: list[Form] = field(default_factory=list)
     defects: list[str] = field(default_factory=list)  # parsing problems worth reporting
 
     @property

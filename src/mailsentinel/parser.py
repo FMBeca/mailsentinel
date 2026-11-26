@@ -10,7 +10,7 @@ from email.message import EmailMessage
 from email.parser import BytesParser
 from email.utils import getaddresses
 
-from mailsentinel import auth
+from mailsentinel import auth, urls
 from mailsentinel.models import Address, Hop, ParsedEmail
 
 # Headers that almost every real message has. A file with none of them is not an email
@@ -133,6 +133,7 @@ def parse_bytes(data: bytes) -> ParsedEmail:
     raw_return_path = _raw_all(msg, "Return-Path")
     return_path = raw_return_path[0].strip().strip("<>").strip() if raw_return_path else ""
     text_body, html_body = _bodies(msg)
+    links, forms = urls.extract(text_body, html_body)
 
     defects = [type(d).__name__ for d in msg.defects]
     if len(senders) > 1:
@@ -152,6 +153,8 @@ def parse_bytes(data: bytes) -> ParsedEmail:
         hops=[_hop(str(v)) for v in msg.get_all("Received", [])],
         text_body=text_body,
         html_body=html_body,
+        links=links,
+        forms=forms,
         defects=defects,
     )
 

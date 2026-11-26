@@ -12,6 +12,7 @@ from mailsentinel.cli import main
     ("legit-personal.eml", "clean", 0),
     ("phish-display-name.eml", "suspicious", 1),
     ("phish-brand-spoof.eml", "phishing", 1),
+    ("phish-credential-form.eml", "phishing", 1),
 ])
 def test_samples_verdict_and_exit_code(samples, capsys, name, verdict, code):
     assert main([str(samples / name), "--json"]) == code
@@ -23,10 +24,30 @@ def test_brand_spoof_findings(samples, capsys):
     main([str(samples / "phish-brand-spoof.eml"), "--json"])
     out = json.loads(capsys.readouterr().out)
     ids = {f["rule_id"] for f in out["findings"]}
-    assert ids == {"MAIL-AUTH-001", "MAIL-AUTH-003", "MAIL-SND-001", "MAIL-SND-002", "MAIL-SND-004"}
+    assert ids == {"MAIL-AUTH-001", "MAIL-AUTH-003", "MAIL-SND-001", "MAIL-SND-002", "MAIL-SND-004",
+                   "MAIL-URL-001", "MAIL-URL-002"}
     # The fake "pass" further down the headers is ignored.
     assert out["authentication"] == {"spf": "softfail", "dkim": "none", "dmarc": "fail", "source": "Authentication-Results"}
     assert out["iocs"]["received_ips"] == ["192[.]0[.]2[.]77", "203[.]0[.]113[.]45"]
+
+
+def test_authenticated_sender_with_credential_form(samples, capsys):
+    # SPF, DKIM and DMARC all pass (the attacker owns the domain): the content gives it away.
+    main([str(samples / "phish-credential-form.eml"), "--json"])
+    out = json.loads(capsys.readouterr().out)
+    assert out["authentication"]["dmarc"] == "pass"
+    ids = {f["rule_id"] for f in out["findings"]}
+    assert {"MAIL-URL-002", "MAIL-URL-003", "MAIL-URL-005"} <= ids
+    assert not any(i.startswith("MAIL-AUTH") for i in ids)
+    urls = {u["url"]: u for u in out["iocs"]["urls"]}
+    assert urls["hxxps[://]198[.]51[.]100[.]201/collect.php"]["source"] == "html-form"
+
+
+def test_url_iocs_keep_link_text(samples, capsys):
+    main([str(samples / "phish-brand-spoof.eml"), "--json", "--no-defang"])
+    urls = {u["url"]: u for u in json.loads(capsys.readouterr().out)["iocs"]["urls"]}
+    assert urls["http://203.0.113.45/verify/login.php?id=5521"]["text"] == "https://accounts.example.com/signin"
+    assert urls["https://accounts.example.com/signin"]["source"] == "text"
 
 
 def test_findings_sorted_by_score(samples, capsys):
