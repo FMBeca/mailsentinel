@@ -65,6 +65,21 @@ def test_received_chain_with_brackets_and_parentheses():
     assert e.hops[0].ip == "198.51.100.23"
 
 
+def test_received_without_from_part():
+    # Internal hops have only "by". Before the fix, by_host was empty, and an
+    # address in brackets after "by" would have been taken as the sender's IP.
+    e = email_from([
+        ("Received", "by 2001:db8:a05:6124::10 with SMTP id abc123xyz;\r\n"
+                     " Mon, 23 Nov 2026 10:00:00 -0800 (PST)"),
+        ("Received", "by mx.example.com (mx.example.com [198.51.100.9]) with LMTP id 1"),
+        ("From", "a@example.org"),
+    ])
+    assert [(h.from_host, h.by_host, h.ip) for h in e.hops] == [
+        ("", "2001:db8:a05:6124::10", ""),
+        ("", "mx.example.com", ""),
+    ]
+
+
 def test_invalid_ip_in_received_is_skipped():
     e = email_from([("Received", "from x (x [999.1.1.1]) by y"), ("From", "a@example.org")])
     assert e.hops[0].ip == ""

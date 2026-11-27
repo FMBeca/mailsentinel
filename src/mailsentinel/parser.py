@@ -76,7 +76,10 @@ def _valid_ip(text: str) -> str:
 
 def _hop(raw: str) -> Hop:
     flat = " ".join(raw.split())
-    from_part, _, rest = flat.partition(" by ")
+    # Internal hops have no "from" and start with "by" ("by 2001:db8::1 with SMTP id ...").
+    # The leading space makes the split work there too, so the receiving server's own address
+    # is never mistaken for the sender's.
+    from_part, _, rest = (" " + flat).partition(" by ")
     from_m = _RECEIVED_FROM.search(from_part)
     by_m = _RECEIVED_BY.search(" by " + rest) if rest else None
     # "from [192.0.2.9] (unknown [203.0.113.7])": the first brackets hold what the sender
