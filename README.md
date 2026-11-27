@@ -9,8 +9,6 @@ email saved as `.eml`. It reads the headers and body, checks what the receiving 
 the sender's authentication, looks for signs of impersonation, and returns a scored verdict with
 the reasons behind it, each mapped to **MITRE ATT&CK**.
 
-> Status: under development towards v0.1. See [Roadmap](#roadmap).
-
 ## What it does, in plain terms
 
 When someone reports a suspicious email, an analyst has to answer a few questions quickly: did
@@ -167,7 +165,7 @@ pointing the same way). The verdict supports a decision; it does not replace the
 
 ## Roadmap
 
-v0.1:
+v0.1.0:
 
 - [x] Parser for headers and text/HTML bodies; Received chain
 - [x] SPF / DKIM / DMARC results and sender consistency rules
@@ -176,7 +174,12 @@ v0.1:
 - [x] Attachments with SHA-256 and dangerous or double extensions
 - [x] Lookalike sender and link domains
 
-Later: Outlook `.msg` files, HTML report, optional reputation lookups.
+Next:
+
+- [ ] Requests for credentials or other information in the body (T1598)
+- [ ] Check that the DMARC result refers to the domain in the From line (detects edited `.eml` files)
+- [ ] Option to mask the recipient's address in URL indicators (unsubscribe links often contain it)
+- [ ] Outlook `.msg` files, HTML report, optional reputation lookups
 
 ## Samples and testing
 
