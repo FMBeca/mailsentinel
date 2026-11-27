@@ -103,32 +103,14 @@ mailsentinel message.eml --no-defang                 # show indicators as they a
 cat message.eml | mailsentinel -                     # read from stdin
 ```
 
-Example (synthetic sample, abridged):
+Analysis of the synthetic sample [`samples/phish-brand-spoof.eml`](samples/phish-brand-spoof.eml):
+a "PayPal" message that fails DMARC, diverts replies to another domain and hides a link to a bare
+IP behind a legitimate-looking address:
 
-```
-From       : "PayPal" <security[@]account-verify[.]example[.]net>
-Reply-To   : <helpdesk-resolution[@]example[.]org>
-Return-Path: bounce-7731[@]mailer[.]example[.]org
-Auth       : SPF softfail | DKIM none | DMARC fail
-
-Verdict    : LIKELY PHISHING  (score 100/100)
-
-[HIGH] DMARC failed: the From domain could not be authenticated (possible spoofing)  (MAIL-AUTH-003)
-    +30 points  MITRE: T1566
-    from_domain: account-verify[.]example[.]net
-
-[MEDIUM] Display name claims a brand that does not match the sending domain  (MAIL-SND-004)
-    +20 points  MITRE: T1656
-    brand: PayPal
-    from: security[@]account-verify[.]example[.]net
-...
-IOCs (defanged)
-    sender domains: account-verify[.]example[.]net, example[.]org, mailer[.]example[.]org
-    received IPs  : 192[.]0[.]2[.]77, 203[.]0[.]113[.]45  (oldest hop first)
-    URL domains   : accounts[.]example[.]com, 203[.]0[.]113[.]45
-    URL           : hxxps[://]accounts[.]example[.]com/signin
-    URL           : hxxp[://]203[.]0[.]113[.]45/verify/login.php?id=5521  (shown as "hxxps[://]accounts[.]example[.]com/signin")
-```
+<p align="center">
+  <img src="docs/demo.png" width="720"
+       alt="mailsentinel output: verdict LIKELY PHISHING with score 100/100; HIGH findings for DMARC failure, link text that differs from the destination and a link to a bare IP; MEDIUM findings for Reply-To to another organisation and a brand in the display name; LOW findings for SPF soft fail and Return-Path mismatch; defanged IOCs">
+</p>
 
 To get an `.eml` file: in Outlook on the web or Thunderbird, use "Save as" / "Download"; in Gmail,
 "Show original" then "Download original". Outlook desktop `.msg` files are not supported yet.
